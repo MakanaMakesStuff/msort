@@ -1,4 +1,4 @@
-# msort
+# msort 🖼 
 Please note that when implementing this plugin, your images should preferably share a parent
 
 ```
@@ -10,5 +10,8 @@ Please note that when implementing this plugin, your images should preferably sh
 ```
 Notice the images are not wrapped
 
-If you wish to wrap you images however, you must do so whilst respecting the parent class of "grandparent" class if wrapped.
-This means to style wraps with a none relative way.
+If you wish to wrap you images however, you must do so in respect to the grandparent element if wrapped.
+This means to style wraps with as absolute and images as fixed 
+
+See solution below for details regarding styling relative to grandparent elements
+https://stackoverflow.com/q/25768069
