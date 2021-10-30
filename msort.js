@@ -1,117 +1,90 @@
-/*
 #####################################################################################
 #####################################################################################
 ##                                                                                 ##
 ## Author: Makana O' Ke Akua Edwards                                               ##
 ##                                                                                 ##
-## Date: 1/26/2019                                                                 ##
+## Date: 10/24/2021                                                              ##
 ##                                                                                 ##
-## Time: 10:07 pm EST                                                              ##
+## Time: 9:01 pm EST                                                              ##
 ##                                                                                 ##
 ## Description: A plugin for creating the Mosaic layout for image galleries        ##
 ##                                                                                 ##
 #####################################################################################
 #####################################################################################
 */
-function M(obj){
-    this.originalObj = obj;
-    if(this instanceof M){
-        this.obj = document.querySelector(obj);
+class Mosaic{
+    constructor(obj, resizable){
+        if(!resizable){ this.resizable = false }
+        else{ this.resizable = resizable }
+        if(obj != null){ this.obj = document.querySelector(obj) }
+        if(this instanceof Mosaic){ /* ignore */ }
+        else{ return new Mosaic(obj) }
     }
-    else{
-        return new M(obj);        
-    }
-}
-M.prototype.Mosaic = function(cols, padding){ 
-    if(padding == "" || padding == null){
-        padding = 0;
-    }
-// GET THE PARENT WIDTH, CHILDREN ELEMENTS, AND CALCULATE FOR ROWS SET FACTIONAL WIDTHS
-    var kids = this.obj.querySelectorAll('img');
-    var ref = this.obj.querySelectorAll('a');
-    this.obj.style.margin = "0 auto";
-    
-    var rem = kids.length % cols;
-    var rows = 0;
-    if(rem > 0){
-        rows = ((kids.length - rem) / cols) + 1;
-    }
-    else{
-        rows = kids.length / cols;
-    }
-// GET THE KIDS AND STORE AUTOMATICALLY STORE THEM IN ROWS AND COLUMNS
-    var list = [];
-    function GetKids(){
-        for(var x = 0; x < kids.length + 1; x++){
-            if(x % cols == 0 && x > 0){
-                myList = [];
-                for(var i = cols; i > 0; i--){
-                    myList.push(kids[x-i]);
-                }
-                list.push(myList);
+    Sort(col, pad, rounded) {
+        if(!rounded){
+            rounded = 0;
+        }
+        //col represents the amount of columns in the gallery
+        //pad represents the amount of space between each image
+        let nodes = this.obj.getElementsByTagName('img');
+        let images = [...nodes];
+        //return if col is greate than half the img items
+        if(col > images.length/2 || col <= 0){ console.log('Error: col must not exceed half of images in gallery') }
+
+        //Get the difference to check for odd number of images
+        const diff = images.length % col;
+        //set the counter which will represent each row of our gallery
+        const cout = (images.length - diff) / col;
+        this.obj.style.fontSize = "0";
+        //if there is a differenc(Odd number of images) then scale the last image appropriately
+
+        if(diff >= 0){
+            /* Get the offsetWidth of the gallery which Holds 
+            our images, these values will be used to scale our images initially 
+            and dynamically on window resizing */
+
+            let galleryWidth = this.obj.getBoundingClientRect().width; 
+
+
+            //Set the height each image dynamically
+            for(let image in images){
+                //create a styles object to change our image styling
+                var styles = {
+                    boxSizing: 'border-box',
+                    position: 'relative',
+                    height: galleryWidth / col + "px",
+                    width: "auto",
+                    display: "inline-block",
+                    float: 'auto',
+                    margin: '0',
+                    fontSize: '0px', 
+                    padding: pad + "px",         
+                };
+                //Assign the styles object to our image style properties
+                Object.assign(images[image].style, styles);
             }
-            if(x == kids.length && rem >= 1){
-                    myList = [];
-                    for(var i = 1; i < rem + 1; i++){
-                        myList.push(kids[x-i]);
+            //this.obj.style.backgroundColor = "red";
+            //Get row and reset total width
+            for(let i = 0; i < cout; i++){
+                var row = images.slice(i * col, (i+1) * col);
+                let totalWidth = 0;
+                for(let r in row){ totalWidth += row[r].getBoundingClientRect().width}
+                for(let r in row){ 
+                    let hdiff = (row[r].getBoundingClientRect().height/row[r].getBoundingClientRect().width);
+
+                    let perc = (row[r].getBoundingClientRect().width/totalWidth);
+                    var styles = {
+                        width: perc * 100 + "%",
+                        height: "auto",
+                        borderRadius:  rounded + 'px',
                     }
-                    list.push(myList);
+                    Object.assign(row[r].style, styles);
                 }
             }
-        }
-    GetKids();
-    
-// GET THE RATIOS OF ELEMENTS IN ROWS AND SET DEFAULT HEIGHTS and WIDTHS
-    function resizeItem(){
-        var INITHEIGHT = 150;
-        for(var i = 0; i < rows; i++){
-            var num = list[i].length;
-            for(var x = 0; x < num; x++){
-                list[i][x].style.height = INITHEIGHT + "px";
-                list[i][x].style.width = "auto";
+            if(diff > 0){
+                images[images.length-1].style.width = "100%";
+                images[images.length-1].style.height = "auto";
             }
         }
     }
-    resizeItem();
-    rowWidths = [];
-    function Ratio(){
-        for(var i = 0; i < rows; i++){
-            var num = list[i].length;
-            var rowWidth = 0;
-            for(var x = 0; x < num; x++){
-                //alert(list[i][x].getAttribute('src'));
-                rowWidth += list[i][x].getBoundingClientRect().width;
-            }
-            rowWidths.push(rowWidth);
-        }
-    }
-    Ratio();
-    
-//RESIZE IMAGE WIDTHS TO FIT PARENT AND MAINTAIN UNIFORM
-
-    var parWidth = this.obj.getBoundingClientRect().width;
-
-    var par = this.obj;
-    this.obj.style.fontSize = "0";
-    function Fit(){
-        for(var i = 0; i < rows; i++){
-            var num = list[i].length;
-            var diff = parWidth - rowWidths[i];
-            for(var x = 0; x < num; x++){
-                //var ratio = list[i][x].getBoundingClientRect().width + ((parWidth - rowWidths[i])/rowWidths[i]) * list[i][x].getBoundingClientRect().width;
-
-                var perc = list[i][x].getBoundingClientRect().width / rowWidths[i] * 100;
-
-               
-                list[i][x].style.width = perc + "%";
-                list[i][x].style.float = "auto";
-                list[i][x].style.height = "auto";
-                list[i][x].style.display = "inline-block";
-                list[i][x].style.boxSizing = "border-box";
-                list[i][x].style.fontSize = "1px";
-                
-            }
-        }
-    }
-    Fit();
-}
+} 
