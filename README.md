@@ -27,18 +27,3 @@ Then we specify the amount of columns we want and also the amount of padding bet
 ```gallery.Start(2, 5);```
 
 Make sure the columns do not exceed more than half of the total number of images in your gallery
-
-<b>Class Name</b>
-
-Alternatively you can specify a class name on the parent element
-
-```
-<div class="parent type-50">
-    <img src="example.png">
-    <img src="example.png">
-    <img src="example.png">
-<div>
-```
-
-Above we added a class "type-50" in which the numerical value represents milliseconds. We can specify any speed by simply adding a number(milliseconds) after "type-"
-This method will execute when the document has loaded. Only downside to using classes instead of JavaScript is not being able to easily bind to events.
